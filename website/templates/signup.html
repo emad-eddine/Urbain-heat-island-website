@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}S'inscrire{% endblock %}
+
+
+
+{% block signupMainSec %}
+<!-- main -->
+<section class="signup-class">
+    <div class="main-w3layouts wrapper">
+        <h1>Inscription</h1>
+        <div class="main-agileinfo">
+            <div class="agileits-top">
+                <form method="POST" id="signupForm" onsubmit="return validateSignUpForm()">
+                    <input id="userName" class="text" type="text" name="Username" placeholder="Non D'utilisateur"
+                        required="">
+                    <span id="usernameSpan" class="signup-input-span"></span>
+
+                    <input id="userEmail" class="text email" type="email" name="email" placeholder="Courriel"
+                        required="">
+
+                    <input id="userPassword" class="text" type="password" name="password" placeholder="Mot De Passe"
+                        required="">
+                    <span id="passwordSpan" class="signup-input-span"></span>
+
+                    <input id="userConfirmPassword" class="text w3lpass" type="password" name="Cpassword"
+                        placeholder="Confirmer Mot De Passe" required="">
+                    <span id="confirmPasswordSpan" class="signup-input-span"></span>
+
+                    <div class="wthree-text">
+                        <div class="clear"> </div>
+                    </div>
+                    <input type="submit" value="S'inscrire">
+                </form>
+                <p>Vous avez deja un compte? <a href="{{ url_for('auth.goLogin')}}"> Connexion Maintenant!</a></p>
+            </div>
+        </div>
+        <ul class="colorlib-bubbles">
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+    </div>
+</section>
+<!-- //main -->
+<!-- copyright -->
+<div class="colorlibcopy-agile">
+    <p>© 2023 K.Imad E.Wafa A.Bilel Amine. All rights reserved </p>
+</div>
+<!-- //copyright -->
+<div id="signupErrorSnackbar" class="{{snackBar}} snackBars">Utilisateur deja Enregistrer.</div>
+<script>
+    function hideSnackBar() {
+
+        var snackBar = document.getElementById("signupErrorSnackbar");
+        // Add the "show" class to DIV
+        snackBar.className = "show";
+    
+        // After 3 seconds, remove the show class from DIV
+        setTimeout(function () { snackBar.className = snackBar.className.replace("show", ""); }, 3000);
+    }
+    {{hideSnackBarF}}
+</script>
+<script src="{{ url_for('static', filename='script/form.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,17 @@
+usgs_m2m_api
+rasterio
+geopandas
+rioxarray
+psycopg2-binary
+rasterstats
+pyshp
+flask
+Flask-Login
+Flask-SQLAlchemy
+Flask-Migrate
+landsatxplore
+wget
+flask-cors
+flask[async]
+matplotlib
+

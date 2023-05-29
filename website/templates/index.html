@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Accueil{% endblock %}
+
+{% block background_video %}<video autoplay muted loop id="background-video">
+    <source src="../static/res/earth.mp4" type="video/mp4">
+</video>{% endblock %}
+
+
+{% block homeMainSec %}<section class="home-content-section"></section><div class="start-content">
+    <h1>Détecter Les Chaleur Urbaine</h1>
+    <a id="startBtn" href="{{ url_for('view.goHeat')}}">Commencer</a>
+</div></section>{% endblock %}

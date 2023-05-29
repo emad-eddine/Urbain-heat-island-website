@@ -1,0 +1,738 @@
+{% extends "base.html" %}
+{% block title %}Tableau De Bord{% endblock %}
+
+{% block boardMainSec %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+    integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+<!-- Make sure you put this AFTER Leaflet's CSS -->
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+    integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+<script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
+<!-- CDN references -->
+<script src="//npmcdn.com/leaflet@1.2.0/dist/leaflet.js"></script>
+<script src="//d3js.org/d3.v4.min.js"></script>
+<script src="//npmcdn.com/geotiff@0.3.6/dist/geotiff.js"></script> <!-- optional -->
+<!-- Plugin -->
+<script src="https://ihcantabria.github.io/Leaflet.CanvasLayer.Field/dist/leaflet.canvaslayer.field.js"></script>
+
+<!-- chart js for visualisation    -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.min.js" crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+<section class="board-section">
+    <div class="map-container">
+        <div id="map">
+            <div id="btnContainer">
+                <div class="container">
+                    <div class="row">
+
+                        <button onclick="resetMarker()" id="refreshButton">
+                            <i class="fa fa-refresh"></i></button>
+                    </div>
+                    <div class="row">
+                        <button id="lstImgDownloadBtn" onclick="downloadLstMap()">
+                            <i class="fa fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="graph-container">
+
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="space-profile" data-toggle="tab" href="#space" role="tab"
+                    aria-controls="space" aria-selected="true">Le Profile Spatialle</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="temp-profile" data-toggle="tab" href="#temp" role="tab" aria-controls="temp"
+                    aria-selected="false">Le Profile Temporelle</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="zone-profile" data-toggle="tab" href="#zone" role="tab" aria-controls="zone"
+                    aria-selected="false">Le Profile D'une Zone</a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="space" role="tabpanel" aria-labelledby="space-profile">
+
+
+                <fieldset id="profileCHartField">
+                    <legend id="profileSpaceLegend">Le Profile Spatialle</legend>
+                    <canvas id="lstTempSpace"></canvas>
+
+                </fieldset>
+
+                <div id="infoField">
+                    <fieldset>
+                        <legend id="profileSpaceLegend">Informations</legend>
+                        <div class="infoDiv">
+                            <p>Latitude: <span id="latText">-</span></p>
+                            <p>Longitude: <span id="lonText">-</span></p>
+                            <p>Temperature:<span id="tempText">-</span></p>
+                            <p>Vegetation:<span id="vegText">-</span></p>
+                            <p>Température Moyenne:<span id="meanTempText">-</span></p>
+                            <p>Distance Totale:<span id="distanceText">-</span></p>
+                            <p>Taux De Végetation:<span id="tauxVeg">-</span></p>
+                        </div>
+                    </fieldset>
+                    <a id="downloadBtn3" href="" onclick="downloadChart2()">Télécharger</a>
+                </div>
+
+
+
+            </div>
+
+
+            <div class="tab-pane fade" id="temp" role="tabpanel" aria-labelledby="temp-profile">
+                <fieldset id="profileCHartField2">
+                    <legend>Le Profile Temporelle</legend>
+                    <canvas id="profileTemp"></canvas>
+
+                </fieldset>
+
+                <div id="infoField">
+                    <fieldset>
+                        <legend id="profileSpaceLegend">Informations</legend>
+                        <div class="infoDiv">
+                            <p>Latitude: <span id="latTextTemp">-</span></p>
+                            <p>Longitude: <span id="lonTextTemp">-</span></p>
+                            <p>Vegetation:<span id="vegTextTemp">-</span></p>
+                            <p>Température Moyenne:<span id="meanTempTextTemp">-</span></p>
+                        </div>
+                    </fieldset>
+                    <a id="downloadBtn2" href="" onclick="downloadChart()">Télécharger</a>
+                </div>
+
+            </div>
+
+
+            <div class="tab-pane fade" id="zone" role="tabpanel" aria-labelledby="zone-profile">
+                <div id="infoField">
+                    <div id="markerContainer">
+                        <legend>Zone</legend>
+                        
+                        <div class="zoneDiv">
+                            <ul id="thelist">
+
+                            </ul>
+                        </div>
+                        <div>
+
+                        </div>
+                    </div>
+                    <fieldset>
+                        <legend id="profileSpaceLegend">Informations</legend>
+                        <small id="zoneInfoLoad">Chargement...</small>
+                        <div class="infoDiv">
+                            <p>Surface: <span id="zoneSurface">-</span></p>
+                            <p>Température Moyenne: <span id="zoneTemp">-</span></p>
+                            <p>Taux De Vegetation:<span id="zoneVeg">-</span></p>
+                        </div>
+                    </fieldset>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<script>
+
+
+    // download lst map
+
+    function downloadLstMap() {
+        window.open("{{LST_TIF_LINK}}", '_blank');
+    }
+
+
+    // variable for map marker
+
+    var mapMarkers = [];
+    var polyline;
+    var multipolygon = [];
+
+    // this section for charts
+    var ctx = document.getElementById("profileTemp").getContext("2d");
+    var spaceCtx = document.getElementById("lstTempSpace").getContext("2d");
+    var fullProfileCoordinates;
+    var ndviA = [];
+
+    var latText = document.getElementById("latText");
+    var lonText = document.getElementById("lonText");
+    var tempText = document.getElementById("tempText");
+    var vegText = document.getElementById("vegText");
+    var meanTempText = document.getElementById("meanTempText");
+    var distanceText = document.getElementById("distanceText");
+    var tauxVeg = document.getElementById("tauxVeg");
+
+    //
+    var latTextTemp = document.getElementById("latTextTemp");
+    var lonTextTemp = document.getElementById("lonTextTemp");
+    var vegTextTemp = document.getElementById("vegTextTemp");
+    var meanTempTextTemp = document.getElementById("meanTempTextTemp");
+
+    //
+
+    var zoneSurface = document.getElementById("zoneSurface").innerText = "-"
+    var zoneTemp =document.getElementById("zoneTemp").innerText = "-"
+    var zoneVeg =document.getElementById("zoneVeg").innerText = "-"
+
+    //
+    var lineChart = new Chart(ctx,
+        {
+            type: "line",
+            data:
+            {
+                labels: [],
+                datasets:
+                    [
+                        {
+                            label: "Temperature de la surface",
+                            data: [],
+                            fill: false,
+                            borderColor: "rgb(219, 133, 52)",
+                            lineTension: 0.5
+                        }
+
+                    ]
+
+            },
+            options:
+            {
+                responsive: false,
+                scales: {
+                    y: {
+                        ticks: { color: '#04AA6D', beginAtZero: true }
+                    },
+                    x: {
+                        ticks: { color: '#04AA6D', beginAtZero: true }
+                    }
+                }
+            }
+        });
+
+    var spaceLineChart = new Chart(spaceCtx,
+        {
+            type: "line",
+            data:
+            {
+                labels: [],
+                datasets:
+                    [
+                        {
+                            label: "Temperature de la surface",
+                            data: [],
+                            fill: false,
+                            borderColor: "rgb(219, 133, 52)",
+                            lineTension: 0.5
+                        }
+                    ]
+            },
+            options:
+            {
+                responsive: false,
+                scales: {
+                    y: {
+                        ticks: { color: '#04AA6D', beginAtZero: true }
+                    },
+                    x: {
+                        ticks: { color: '#04AA6D', beginAtZero: true }
+                    }
+                },
+                onHover: (e) => {
+                    const points = spaceLineChart.getElementsAtEventForMode(e, 'nearest',
+                        { intersect: true }, true);
+                    if (points[0]) {
+                        const dataset = points[0].datasetIndex;
+                        const index = points[0].index;
+                        xValue = spaceLineChart.data.labels[index] // [lat,lng]
+                        fullXValue = fullProfileCoordinates[index]
+                        //console.log(ndvi[index])
+                        //console.log(fullXValue)
+
+                        latText.innerText = fullXValue[0]
+                        lonText.innerText = fullXValue[1]
+                        tempText.innerText = parseFloat(spaceLineChart.data.datasets[0].data[index]).toFixed(1) + " C°"
+                        //console.log("index is " + index)
+                        //console.log("index veg " + this.ndviA[index])
+                        if (parseFloat(ndviA[index]) > 0.10)
+                            vegText.innerText = "Oui"
+                        else
+                            vegText.innerText = "Non"
+
+
+
+                    }
+                },
+
+            },
+        });
+
+
+    // this section for charts
+    // // GeoTIFF
+    var tiff = "{{LST_TIF_LINK}}";
+
+    var map = L.map('map');
+
+
+    /* Basemap */
+    var url = 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+    L.tileLayer(url, {
+        attribution: 'CartoDB & OSM',
+        subdomains: 'abc',
+        maxZoom: 19
+    }).addTo(map);
+
+    var markerOptions =
+    {
+        draggable: false
+    }
+
+    var markersArray = []
+    var pointCounter = 0
+    // this function will handel zone
+    function createMarkerOnClick(evt) {
+        marker = L.marker([evt.latlng.lat, evt.latlng.lng], markerOptions);
+        markersArray.push(marker)
+        marker.addTo(map)
+
+        // update the list
+        thelist = document.getElementById("thelist")
+        const listnode = document.createElement("li");
+        const listContainer = document.createElement("div");
+        const listpar = document.createElement("p");
+        const listbtn = document.createElement("button");
+        pointCounter += 1;
+        listnode.setAttribute("id", "p" + pointCounter)
+        listbtn.setAttribute("id", pointCounter)
+        listbtn.setAttribute("onclick", "removePoint(this)")
+
+        listpar.innerHTML = "Point " + pointCounter + ":[" + parseFloat(evt.latlng.lat).toFixed(4) + "," + parseFloat(evt.latlng.lng).toFixed(4) + "]"
+        listbtn.innerHTML = "<i class='fa fa-trash' aria-hidden='true'></i>"
+        listContainer.appendChild(listpar)
+        listContainer.appendChild(listbtn)
+        listnode.appendChild(listContainer)
+        thelist.appendChild(listnode)
+
+        // draw
+        drawPoly(markersArray)
+        
+        
+    }
+
+    // this function will delete point
+    function removePoint(e) {
+        //console.log("my ID is" +e.id);
+        btnId = e.id;
+        elementId = "p" + btnId
+        parent = document.getElementById(elementId)
+        removeAllChildNodes(parent)
+        parent.remove();
+        map.removeLayer(markersArray[btnId - 1])
+        delete markersArray[btnId - 1];
+        drawPoly(markersArray)
+
+    }
+
+
+    // function that draw the poly
+
+    function drawPoly(markersArray) {
+        if (markersArray.length >= 4) 
+        {
+            if (multipolygon.length != 0) {
+                for (let i = 0; i < multipolygon.length; i++) {
+                    //console.log(markersArray[i].getLatLng())
+                    map.removeLayer(multipolygon[i])
+                }
+                multipolygon = []
+            }
+
+
+            var latlang = [];
+            for (let i = 0; i < markersArray.length; i++) {
+                //console.log(markersArray[i].getLatLng())
+                latlang.push(markersArray[i].getLatLng())
+            }
+
+            var multiPolygonOptions = { color: 'red' };
+
+            // Creating multi polygon
+            multipoly = L.polygon(latlang, multiPolygonOptions);
+            multipolygon.push(multipoly)
+            multipoly.addTo(map);
+
+            document.getElementById("zoneInfoLoad").style.display = "block"
+            document.getElementById("zoneSurface").innerText = "-"
+            document.getElementById("zoneTemp").innerText = "-"
+            document.getElementById("zoneVeg").innerText = "-"
+            var dict = {};
+            for (let i = 0; i < markersArray.length; i++) 
+            {
+                valueTo = markersArray[i].getLatLng()["lat"] + "," + markersArray[i].getLatLng()["lng"]
+                keyV = i.toString()
+                dict[keyV] = valueTo;
+            }
+
+            preformZonePost(dict)
+        }
+    }
+
+
+    // remmove children
+    function removeAllChildNodes(parent) {
+        while (parent.firstChild) {
+            parent.removeChild(parent.firstChild);
+        }
+    }
+
+    var toggle = L.easyButton({
+        states: [{
+            stateName: 'enable-markers',
+            icon: 'fa-map-marker',
+            title: 'Enable markers on click',
+            onClick: function (control) {
+                control.state('disable-markers');
+                map.on('click', createMarkerOnClick);
+            }
+        }, {
+            icon: 'fa-map-marker',
+            stateName: 'disable-markers',
+            title: 'Disable markers on click',
+            onClick: function (control) {
+                control.state('enable-markers');
+                map.off('click', createMarkerOnClick);
+            }
+        }]
+    });
+    toggle.addTo(map);
+    var pressTimer;
+    var marker1;
+    var latlng1
+    var marker2;
+    var latlng2;
+
+
+    map.on("dblclick", function (e) {
+        if (marker1 == null) {
+
+            marker1 = new L.Marker(e.latlng, { draggable: false });
+            latlng1 = e.latlng
+            map.addLayer(marker1);
+        }
+        else if (marker2 == null) {
+
+            marker2 = new L.Marker(e.latlng, { draggable: false });
+            latlng2 = e.latlng
+            map.addLayer(marker2);
+
+            var latlngs = Array();
+
+            var latlngs = Array();
+
+            //Get latlng from first marker
+            latlngs.push(marker1.getLatLng());
+
+            //Get latlng from first marker
+            latlngs.push(marker2.getLatLng());
+
+            //You can just keep adding markers
+
+            // create a red polyline from an arrays of LatLng points
+            polyline = L.polyline(latlngs, { color: 'red' }).addTo(map);
+            // at this section we are sure that two marker are choosen 
+            // send post request to get the graph
+            dataToSend =
+            {
+                "lat1": latlng1["lat"],
+                "lon1": latlng1["lng"],
+                "lat2": latlng2["lat"],
+                "lon2": latlng2["lng"]
+            }
+
+            console.log(dataToSend)
+            preformPostSpaceProfile(dataToSend)
+        }
+
+    })
+
+
+
+    function resetMarker() {
+
+        if (marker1 != null)
+            map.removeLayer(marker1)
+        if (marker2 != null)
+            map.removeLayer(marker2)
+        if (mapMarkers.length != 0) {
+            mapMarkers.forEach(deleteMarkers);
+        }
+        if (markersArray.length != 0) {
+            markersArray.forEach(deleteMarkers);
+            removeAllChildNodes(document.getElementById("thelist"));
+            pointCounter = 0
+        }
+        if (multipolygon.length != 0) 
+        {
+            for (let i = 0; i < multipolygon.length; i++) {
+                //console.log(markersArray[i].getLatLng())
+                map.removeLayer(multipolygon[i])
+            }
+            multipolygon = []
+            
+        zoneSurface.innerText = "-"
+        zoneTemp.innerText = "-"
+        zoneVeg.innerText = "-"
+        }
+        mapMarkers = [];
+        markersArray = [];
+
+        marker1 = null
+        latlng1 = null
+        marker2 = null
+        latlng2 = null
+        map.removeLayer(polyline)
+        updateProfileSpaceChart([], [])
+        updateDoughnutChart([], [])
+        latText.innerText = "-"
+        lonText.innerText = "-"
+        tempText.innerText = "-"
+        vegText.innerText = "-"
+        meanTempText.innerText = "-"
+        distanceText.innerText = "-"
+        tauxVeg.innerText = "-"
+
+
+    }
+
+
+    function deleteMarkers(item, index) {
+        map.removeLayer(item)
+    }
+
+
+
+    /*
+        Some ScalarField layers with custom styles
+    */
+    fetch(tiff).then(r => r.arrayBuffer()).then(function (buffer) {
+        var s = L.ScalarField.fromGeoTIFF(buffer);
+
+        var layer2 = L.canvasLayer.scalarField(s, {
+            //color: chroma.scale(['black','red','yellow','white']).correctLightness().domain(s.range).classes(25),
+            color: chroma.scale(['blue', 'yellow', 'red']).domain([10, 50]).classes(25),
+            mouseMoveCursor: null,
+            opacity: 0.55
+        }).addTo(map);
+
+        layer2.on("click", function (e) {
+            if (e.value !== null) {
+                //console.log(e.latlng["lat"])
+                //console.log(e.latlng["lng"])
+                dataToSend = {
+                    "lat": e.latlng["lat"],
+                    "lon": e.latlng["lng"]
+                }
+                latTextTemp.innerText = dataToSend["lon"]
+                lonTextTemp.innerText = dataToSend["lat"]
+
+                console.log(dataToSend)
+                preformPost(dataToSend)
+                let popup = L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(`${e.value}`)
+                    .openOn(map);
+
+
+
+
+                // get the position in map
+
+
+
+                // send post request
+                //preformPost()
+            }
+        });
+        map.fitBounds(layer2.getBounds());
+    })
+
+    // this is a post request for get in the data for charts
+    function preformPost(sendingData) {
+        jQuery.ajax({
+            type: 'POST',// http method
+            url: "profile",
+            data: sendingData,// data to submit
+            success: function (responseObj) {
+                console.log("bands " + responseObj["band10"])
+                updateDoughnutChart(responseObj["labels"], responseObj["band10"], responseObj["ndvi"])
+            }
+        });
+    }
+
+
+    // this is a post request for get in the data for spastiale chart
+    function preformPostSpaceProfile(sendingData) {
+        jQuery.ajax({
+            type: 'POST',// http method
+            url: "profileSpace",
+            data: sendingData,// data to submit
+            success: function (responseObj) {
+                //console.log(responseObj)
+                fullProfileCoordinates = responseObj["positionComplet"]
+                updateProfileSpaceChart(responseObj["labels"], responseObj["temps"], responseObj["ndvi"])
+            }
+        });
+    }
+
+    // this is a post request to get zone infos
+    function preformZonePost(sendingData) {
+        jQuery.ajax({
+            type: 'POST',// http method
+            url: "zone",
+            data: sendingData,// data to submit
+            success: function (responseObj) {
+                //console.log("s " + responseObj["surface"])
+                //console.log("s " + responseObj["meanTemp"])
+                document.getElementById("zoneInfoLoad").style.display = "none"
+                document.getElementById("zoneSurface").innerText = parseFloat(responseObj["surface"]).toFixed(2) + " KM2"
+                document.getElementById("zoneTemp").innerText = parseFloat(responseObj["meanTemp"]).toFixed(1) + " C°"
+                document.getElementById("zoneVeg").innerText = parseFloat(responseObj["tauxVeg"]).toFixed(2) + " %"
+                
+                
+            }
+        });
+    }
+    function updateDoughnutChart(labels, band10Data, ndviValue) {
+
+        var sum = 0;
+        for (var number of band10Data) {
+            sum += number;
+        }
+        averageTemp = sum / band10Data.length;
+        meanTempTextTemp.innerText = parseFloat(averageTemp).toFixed(1) + " C°"
+
+        // check ndvi value
+        if (parseFloat(ndviValue) > 0.10)
+            vegTextTemp.innerText = "Oui"
+        else
+            vegTextTemp.innerText = "Non"
+
+        lineChart.data.labels = labels;
+        lineChart.data.datasets[0].data = band10Data;
+        lineChart.update();
+    }
+
+    function updateProfileSpaceChart(labels, tempData, ndvi) {
+        // get the mean temp and distance of all line
+        // from point A to point B the distance is 30m
+
+        var sum = 0;
+        var distance = 0;
+        for (var number of tempData) {
+            sum += number;
+            distance += 30
+        }
+        averageTemp = sum / tempData.length;
+        meanTempText.innerText = parseFloat(averageTemp).toFixed(1) + " C°"
+        //console.log(averageTemp);
+
+        // soustract start point from distance
+        distance -= 30
+        if (distance == 0)
+            distance = 30
+
+        distanceInKm = distance / 1000
+        distanceText.innerText = distance + " Metres/ " + distanceInKm + " KM"
+
+        isVeg = []
+        ndviA = ndvi
+        // get vegetation
+        for (var number of ndvi) {
+            if (parseFloat(number) > 0.10)
+                isVeg.push("Oui")
+        }
+
+        tauxVegValue = (isVeg.length * 100) / ndvi.length
+        //console.log("veg taux " + tauxVegValue)
+
+        tauxVeg.innerText = parseFloat(tauxVegValue).toFixed(2) + " %"
+
+
+
+
+        spaceLineChart.data.labels = labels;
+        spaceLineChart.data.datasets[0].data = tempData;
+        spaceLineChart.update();
+    }
+
+
+    // download section
+
+
+    function downloadChart() {
+        var chartDBtn = document.getElementById("downloadBtn2")
+        var canvas = document.getElementById("profileTemp");
+        chartDBtn.download = 'profile-Temporelle.png';
+        chartDBtn.href = canvas.toDataURL("image/png", 1);
+        //chartDBtn.click();
+    }
+
+    function downloadChart2() {
+        var chartDBtn = document.getElementById("downloadBtn3")
+        var canvas = document.getElementById("lstTempSpace");
+        chartDBtn.download = 'profile-spaciale.png';
+        chartDBtn.href = canvas.toDataURL("image/png", 1);
+        //chartDBtn.click();
+    }
+
+
+    function clickHandler(click) {
+        const points = spaceLineChart.getElementsAtEventForMode(click, 'nearest',
+            { intersect: true }, true);
+        if (points[0]) {
+            const dataset = points[0].datasetIndex;
+            const index = points[0].index;
+            //console.log(spaceLineChart.data.labels[index])
+            xValue = spaceLineChart.data.labels[index] // [lat,lng]
+            fullXValue = fullProfileCoordinates[index]
+            //console.log(ndvi[index])
+
+
+
+            // add marker to map with this coordinates
+
+            var lat = fullXValue[0];
+            var lng = fullXValue[1];
+
+            var latlng = L.latLng(lng, lat);
+            pointMarker = new L.Marker(latlng, { draggable: false });
+            mapMarkers.push(pointMarker);
+            //console.log(mapMarkers)
+            pointMarker.addTo(map);
+            map.setView(latlng);
+
+        }
+    }
+
+    spaceLineChart.canvas.onclick = clickHandler;
+</script>
+
+
+<script src="https://unpkg.com/georaster"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
+<script src="{{ url_for('static', filename='script/board.js') }}"></script>
+
+{% endblock %}
